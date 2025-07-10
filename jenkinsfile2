@@ -1,0 +1,28 @@
+node {
+    stage('Checkout') {
+        echo 'Checking out source code...'
+        checkout scm
+    }
+
+    stage('Build') {
+        echo 'Building the project...'
+        // Replace with your actual build command
+        sh 'echo "Running build step..."'
+    }
+
+    stage('Test') {
+        echo 'Running tests...'
+        // Replace with your test command
+        sh 'echo "Running test step..."'
+    }
+
+    stage('Deploy') {
+        echo 'Deploying application...'
+        // Replace with your deploy command
+        sh 'echo "Deploy step..."'
+    }
+
+    // Optionally handle errors
+    currentBuild.result = 'SUCCESS'
+}
+
