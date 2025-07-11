@@ -5,6 +5,8 @@ node {
     }
 
     stage('Build') {
+        echo 'waiting 180 seconds before starting the build...'
+        sleep time:180, unit: 'SECONDS'
         echo 'Building the project...'
         // Replace with your actual build command
         sh 'echo "Running build step..."'
