@@ -1,3 +1,5 @@
+
+
 pipeline {
     agent any
 
@@ -9,21 +11,23 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                echo 'Waiting 180 seconds before starting the build...'
-                sleep time: 180, unit: 'SECONDS'
-                echo 'Building the project...'
-                // Run your build commands here
-                sh 'echo "Build step running..."'
-            }
-        }
+        stage('Test and Build') {
+            parallel {
+                stage('Test') {
+                    steps {
+                        echo 'Running tests...'
+                        // Run your test commands here
+                        sh 'echo "Test step running..."'
+                    }
+                }
 
-        stage('Test') {
-            steps {
-                echo 'Running tests...'
-                // Run your test commands here
-                sh 'echo "Test step running..."'
+                stage('Build') {
+                    steps {
+                        echo 'Building the project...'
+                        // Run your build commands here
+                        sh 'echo "Build step running..."'
+                    }
+                }
             }
         }
     }
@@ -37,4 +41,3 @@ pipeline {
         }
     }
 }
-
