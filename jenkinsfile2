@@ -1,3 +1,5 @@
+
+
 node {
     stage('Checkout') {
         echo 'Checking out source code...'
@@ -5,26 +7,28 @@ node {
     }
 
     stage('Build') {
-        echo 'waiting 180 seconds before starting the build...'
-        sleep time:180, unit: 'SECONDS'
+        echo 'Waiting 180 seconds before starting the build...'
+        sleep time: 180, unit: 'SECONDS'
         echo 'Building the project...'
         // Replace with your actual build command
         sh 'echo "Running build step..."'
     }
 
-    stage('Test') {
-        echo 'Running tests...'
-        // Replace with your test command
-        sh 'echo "Running test step..."'
-    }
-
-    stage('Deploy') {
-        echo 'Deploying application...'
-        // Replace with your deploy command
-        sh 'echo "Deploy step..."'
+    stage('Test and Deploy (Parallel)') {
+        parallel (
+            Test: {
+                echo 'Running tests...'
+                // Replace with your test command
+                sh 'echo "Running test step..."'
+            },
+            Deploy: {
+                echo 'Deploying application...'
+                // Replace with your deploy command
+                sh 'echo "Deploy step..."'
+            }
+        )
     }
 
     // Optionally handle errors
     currentBuild.result = 'SUCCESS'
 }
-
