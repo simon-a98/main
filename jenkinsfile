@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+
+    environment {
+        TF_VERSION = '1.7.0' // Adjust based on what’s installed
+    }
+
+    stages {
+        stage('Init Terraform') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+
+        stage('Validate Terraform') {
+            steps {
+                sh 'terraform validate'
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                sh 'terraform plan -out=tfplan'
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                input 'Proceed with Terraform Apply?'
+                sh 'terraform apply tfplan'
+            }
+        }
+    }
+}
+
