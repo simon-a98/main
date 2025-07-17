@@ -1,10 +1,4 @@
-output "instance_public_ip" {
-  description = "Public IP of the EC2 instance"
-  value       = aws_instance.nginx.public_ip
-}
-
-output "instance_id" {
-  description = "ID of the EC2 instance"
-  value       = aws_instance.nginx.id
+output "public_ip" {
+  value = aws_instance.nginx_server.public_ip
 }
 
