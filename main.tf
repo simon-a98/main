@@ -1,21 +1,22 @@
 provider "aws" {
-  region = var.region
+  region = "ap-south-1"
 }
 
-resource "aws_instance" "nginx" {
-  ami           = var.ami_id
-  instance_type = var.instance_type
+resource "aws_instance" "nginx_server" {
+  ami           = "ami-03f4878755434977f" # Amazon Linux 2 AMI for ap-south-1
+  instance_type = "t2.micro"
 
   user_data = <<-EOF
               #!/bin/bash
-              sudo apt update -y
-              sudo apt install nginx -y
-              sudo systemctl start nginx
-              sudo systemctl enable nginx
+              yum update -y
+              amazon-linux-extras install nginx1 -y
+              systemctl start nginx
+              systemctl enable nginx
             EOF
 
   tags = {
-    Name = "NGINX-Terraform"
+    Name = "nginx-jenkins-instance"
   }
 }
+
 
