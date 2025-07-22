@@ -101,8 +101,12 @@ resource "aws_instance" "nginx_server" {
 
   user_data = <<-EOF
               #!/bin/bash
+              exec > /var/log/user-data.log 2>&1
+              set -e
               yum update -y
-              amazon-linux-extras install nginx1 -y
+              amazon-linux-extras enable nginx1
+              yum clean metadata
+              yum install nginx -y
               systemctl start nginx
               systemctl enable nginx
 
@@ -111,7 +115,7 @@ resource "aws_instance" "nginx_server" {
               <html lang="en">
               <head>
                 <meta charset="UTF-8">
-                <title>anugrah | Portfolio</title>
+                <title>Anugrah | Portfolio</title>
                 <style>
                   body {
                     font-family: Arial, sans-serif;
@@ -138,8 +142,11 @@ resource "aws_instance" "nginx_server" {
               </body>
               </html>
               EOT
-EOF
+              EOF
 
   tags = {
     Name = "nginx-jenkins-instance"
+  }
+}
+
 
