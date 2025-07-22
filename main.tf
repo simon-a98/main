@@ -119,7 +119,7 @@ resource "aws_instance" "nginx_server" {
                 <style>
                   body {
                     font-family: Arial, sans-serif;
-                    background-color: #f4f4f4;
+                    background-color: #007BFF;
                     text-align: center;
                     padding: 50px;
                   }
