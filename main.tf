@@ -2,6 +2,22 @@ provider "aws" {
   region = "ap-south-1"
 }
 
+# Get the latest Amazon Linux 2 AMI
+data "aws_ami" "amazon_linux_2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 # Create a VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
@@ -21,7 +37,7 @@ resource "aws_subnet" "main" {
   }
 }
 
-# Create an Internet Gateway
+# Internet Gateway
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.main.id
   tags = {
@@ -29,25 +45,22 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
-# Create a route table
+# Route Table
 resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.main.id
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.gw.id
   }
-  tags = {
-    Name = "jenkins-rt"
-  }
 }
 
-# Associate route table with subnet
 resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.main.id
   route_table_id = aws_route_table.rt.id
 }
 
-# Create a security group
+# Security Group for SSH and HTTP
 resource "aws_security_group" "nginx_sg" {
   name        = "nginx-sg"
   description = "Allow HTTP and SSH"
@@ -79,9 +92,9 @@ resource "aws_security_group" "nginx_sg" {
   }
 }
 
-# Launch EC2 instance in the VPC
+# EC2 Instance
 resource "aws_instance" "nginx_server" {
-  ami                    = "ami-03f4878755434977f"
+  ami                    = data.aws_ami.amazon_linux_2.id
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.nginx_sg.id]
@@ -127,8 +140,6 @@ resource "aws_instance" "nginx_server" {
               EOT
 EOF
 
-
   tags = {
     Name = "nginx-jenkins-instance"
-  }
-}
+
