@@ -93,8 +93,7 @@ resource "aws_security_group" "nginx_sg" {
 }
 
 # EC2 Instance
-resource "aws_instance" "nginx_server" { 
-  count                  = 2
+resource "aws_instance" "nginx_server_1" { 
   ami                    = data.aws_ami.amazon_linux_2.id
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.main.id
@@ -146,8 +145,62 @@ resource "aws_instance" "nginx_server" {
               EOF
 
   tags = {
-    Name = "nginx-jenkins-instance-${count.index + 1}"
+     Name = "nginx-jenkins-instance-1"
   }
 }
+resource "aws_instance" "nginx_server_2" { 
+  ami                    = data.aws_ami.amazon_linux_2.id
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.main.id
+  vpc_security_group_ids = [aws_security_group.nginx_sg.id]
 
+  user_data = <<-EOF
+              #!/bin/bash
+              exec > /var/log/user-data.log 2>&1
+              set -e
+              yum update -y
+              amazon-linux-extras enable nginx1
+              yum clean metadata
+              yum install nginx -y
+              systemctl start nginx
+              systemctl enable nginx
+
+              cat <<EOT > /usr/share/nginx/html/index.html
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <title>Anugrah | Portfolio</title>
+                <style>
+                  body {
+                    font-family: Arial, sans-serif;
+                    background-color:rgb(229, 235, 240);
+                    text-align: center;
+                    padding: 50px;
+                  }
+                  h1 {
+                    color: #333;
+                  }
+                  p {
+                    font-size: 18px;
+                    color: #666;
+                  }
+                  a {
+                    color:rgb(229, 235, 240);
+                    text-decoration: none;
+                  }
+                </style>
+              </head>
+              <body>
+                <h1>Hi, I'm torian</h1>
+                <p>DevOps · Cloud · yabalabala</p>
+              </body>
+              </html>
+              EOT
+              EOF
+
+  tags = {
+     Name = "nginx-jenkins-instance-2"
+  }
+}
 
