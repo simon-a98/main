@@ -93,7 +93,8 @@ resource "aws_security_group" "nginx_sg" {
 }
 
 # EC2 Instance
-resource "aws_instance" "nginx_server" {
+resource "aws_instance" "nginx_server" { 
+  count                  = 2
   ami                    = data.aws_ami.amazon_linux_2.id
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.main.id
@@ -145,7 +146,7 @@ resource "aws_instance" "nginx_server" {
               EOF
 
   tags = {
-    Name = "nginx-jenkins-instance"
+    Name = "nginx-jenkins-instance-${count.index + 1}"
   }
 }
 
