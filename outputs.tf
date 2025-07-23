@@ -1,4 +1,4 @@
-output "public_ip" {
-  value = aws_instance.nginx_server.public_ip
+output "instance_public_ips" {
+  value = [for instance in aws_instance.nginx_server : instance.public_ip]
 }
 
