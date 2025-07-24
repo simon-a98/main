@@ -1,7 +1,9 @@
 output "nginx_instance_ips" {
-  value = [
-    aws_instance.nginx_server_1.public_ip,
-    aws_instance.nginx_server_2.public_ip
-  ]
+  description = "Public IPs of the Nginx instances"
+  value = {
+    for name, instance in aws_instance.nginx_servers :
+    name => instance.public_ip
+  }
 }
+
 
