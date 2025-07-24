@@ -2,7 +2,7 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# Get the latest Amazon Linux 2 AMI
+# Fetch latest Amazon Linux 2 AMI
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
   owners      = ["amazon"]
@@ -18,7 +18,7 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
-# Create a VPC
+# Create VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
   tags = {
@@ -26,7 +26,7 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Create a subnet
+# Create Subnet
 resource "aws_subnet" "main" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
@@ -55,6 +55,7 @@ resource "aws_route_table" "rt" {
   }
 }
 
+# Associate Route Table
 resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.main.id
   route_table_id = aws_route_table.rt.id
@@ -92,115 +93,54 @@ resource "aws_security_group" "nginx_sg" {
   }
 }
 
-# EC2 Instance
-resource "aws_instance" "nginx_server_1" { 
-  ami                    = data.aws_ami.amazon_linux_2.id
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.main.id
-  vpc_security_group_ids = [aws_security_group.nginx_sg.id]
+# Variable: HTML content for each instance
+variable "instance_html_content" {
+  type = map(string)
+  default = {
+    nginx-server-1 = <<-HTML
+      <html>
+      <body style="background-color:#66BFFF; text-align:center;">
+      <h1>Hi, I'm Anugrah</h1>
+      <p>DevOps · Cloud · Content Creator</p>
+      </body>
+      </html>
+    HTML
 
-  user_data = <<-EOF
-              #!/bin/bash
-              exec > /var/log/user-data.log 2>&1
-              set -e
-              yum update -y
-              amazon-linux-extras enable nginx1
-              yum clean metadata
-              yum install nginx -y
-              systemctl start nginx
-              systemctl enable nginx
-
-              cat <<EOT > /usr/share/nginx/html/index.html
-              <!DOCTYPE html>
-              <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <title>Anugrah | Portfolio</title>
-                <style>
-                  body {
-                    font-family: Arial, sans-serif;
-                    background-color: #66BFFF;
-                    text-align: center;
-                    padding: 50px;
-                  }
-                  h1 {
-                    color: #333;
-                  }
-                  p {
-                    font-size: 18px;
-                    color: #666;
-                  }
-                  a {
-                    color: #66BFFF;
-                    text-decoration: none;
-                  }
-                </style>
-              </head>
-              <body>
-                <h1>Hi, I'm Anugrah</h1>
-                <p>DevOps · Cloud · Content Creator</p>
-              </body>
-              </html>
-              EOT
-              EOF
-
-  tags = {
-     Name = "nginx-jenkins-instance-1"
+    nginx-server-2 = <<-HTML
+      <html>
+      <body style="background-color:rgb(229, 235, 240); text-align:center;">
+      <h1>Hi, I'm Torian</h1>
+      <p>DevOps · Cloud · yabalabala</p>
+      </body>
+      </html>
+    HTML
   }
 }
-resource "aws_instance" "nginx_server_2" { 
+
+# EC2 Instances (shared setup, unique content)
+resource "aws_instance" "nginx_servers" {
+  for_each               = var.instance_html_content
   ami                    = data.aws_ami.amazon_linux_2.id
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.nginx_sg.id]
 
   user_data = <<-EOF
-              #!/bin/bash
-              exec > /var/log/user-data.log 2>&1
-              set -e
-              yum update -y
-              amazon-linux-extras enable nginx1
-              yum clean metadata
-              yum install nginx -y
-              systemctl start nginx
-              systemctl enable nginx
+    #!/bin/bash
+    yum update -y
+    amazon-linux-extras enable nginx1
+    yum clean metadata
+    yum install nginx -y
+    systemctl start nginx
+    systemctl enable nginx
 
-              cat <<EOT > /usr/share/nginx/html/index.html
-              <!DOCTYPE html>
-              <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <title>Anugrah | Portfolio</title>
-                <style>
-                  body {
-                    font-family: Arial, sans-serif;
-                    background-color:rgb(229, 235, 240);
-                    text-align: center;
-                    padding: 50px;
-                  }
-                  h1 {
-                    color: #333;
-                  }
-                  p {
-                    font-size: 18px;
-                    color: #666;
-                  }
-                  a {
-                    color:rgb(229, 235, 240);
-                    text-decoration: none;
-                  }
-                </style>
-              </head>
-              <body>
-                <h1>Hi, I'm torian</h1>
-                <p>DevOps · Cloud · yabalabala</p>
-              </body>
-              </html>
-              EOT
-              EOF
+    cat <<EOT > /usr/share/nginx/html/index.html
+    ${each.value}
+    EOT
+  EOF
 
   tags = {
-     Name = "nginx-jenkins-instance-2"
+    Name = each.key
   }
 }
 
