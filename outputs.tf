@@ -10,3 +10,4 @@ output "nginx_instance_2_public_ip" {
 
 
 
+

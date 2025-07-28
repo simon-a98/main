@@ -93,7 +93,7 @@ resource "aws_security_group" "nginx_sg" {
   }
 }
 
-module "nginx_instance" {
+module "nginx_instance_1" {
   source             = "./modules/nginx_instance"
   ami                = data.aws_ami.amazon_linux_2.id
   instance_type      = "t2.micro"
