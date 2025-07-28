@@ -18,7 +18,7 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
-# Create VPC
+# VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
   tags = {
@@ -26,7 +26,7 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Create Subnet
+# Subnet
 resource "aws_subnet" "main" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
@@ -61,7 +61,7 @@ resource "aws_route_table_association" "a" {
   route_table_id = aws_route_table.rt.id
 }
 
-# Security Group for SSH and HTTP
+# Security Group
 resource "aws_security_group" "nginx_sg" {
   name        = "nginx-sg"
   description = "Allow HTTP and SSH"
@@ -93,54 +93,21 @@ resource "aws_security_group" "nginx_sg" {
   }
 }
 
-# Variable: HTML content for each instance
-variable "instance_html_content" {
-  type = map(string)
-  default = {
-    nginx-server-1 = <<-HTML
-      <html>
-      <body style="background-color:#66BFFF; text-align:center;">
-      <h1>Hi, I'm Anugrah</h1>
-      <p>DevOps · Cloud · Content Creator</p>
-      </body>
-      </html>
-    HTML
-
-    nginx-server-2 = <<-HTML
-      <html>
-      <body style="background-color:rgb(229, 235, 240); text-align:center;">
-      <h1>Hi, I'm Torian</h1>
-      <p>DevOps · Cloud · yabalabala</p>
-      </body>
-      </html>
-    HTML
-  }
+module "nginx_instance" {
+  source             = "./modules/nginx_instance"
+  ami                = data.aws_ami.amazon_linux_2.id
+  instance_type      = "t2.micro"
+  subnet_id          = aws_subnet.main.id
+  security_group_ids = [aws_security_group.nginx_sg.id]
+  instance_name      = "nginx-server-1"
+}
+module "nginx_instance_2" {
+  source             = "./modules/nginx_instance"
+  ami                = data.aws_ami.amazon_linux_2.id
+  instance_type      = "t2.micro"
+  subnet_id          = aws_subnet.main.id
+  security_group_ids = [aws_security_group.nginx_sg.id]
+  instance_name      = "nginx-server-2"
 }
 
-# EC2 Instances (shared setup, unique content)
-resource "aws_instance" "nginx_servers" {
-  for_each               = var.instance_html_content
-  ami                    = data.aws_ami.amazon_linux_2.id
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.main.id
-  vpc_security_group_ids = [aws_security_group.nginx_sg.id]
-
-  user_data = <<-EOF
-    #!/bin/bash
-    yum update -y
-    amazon-linux-extras enable nginx1
-    yum clean metadata
-    yum install nginx -y
-    systemctl start nginx
-    systemctl enable nginx
-
-    cat <<EOT > /usr/share/nginx/html/index.html
-    ${each.value}
-    EOT
-  EOF
-
-  tags = {
-    Name = each.key
-  }
-}
 
